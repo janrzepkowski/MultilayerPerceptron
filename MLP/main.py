@@ -12,5 +12,3 @@ def main():
         neuron_nums.append(int(input(f"Podaj ilość neuronów w {i + 1} warstwie ukrytej: ")))
     neuron_nums.append(int(input("Podaj ilość neuronów w warstwie wyjściowej: ")))
     bias = bool(input("Czy chcesz użyć biasu? (True/False): "))
-
-    network = Network(layer_num, input_num, neuron_nums, bias)
