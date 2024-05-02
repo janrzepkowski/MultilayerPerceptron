@@ -5,10 +5,14 @@ from functions import sigmoid, sigmoid_derivative
 
 
 class Network(object):
-    def __init__(self, sizes):
+    def __init__(self, sizes, useBias):
         self.num_layers = len(sizes)
         self.sizes = sizes
-        self.biases = [np.random.uniform(-1, 1, (y, 1)) for y in sizes[1:]]
+        self.useBias = useBias
+        if useBias:
+            self.biases = [np.random.uniform(-1, 1, (y, 1)) for y in sizes[1:]]
+        else:
+            self.biases = [np.zeros((y, 1)) for y in sizes[1:]]
         self.weights = [np.random.uniform(-1, 1, (y, x)) for x, y in zip(sizes[:-1], sizes[1:])]
 
     def feedforward(self, a):
@@ -49,8 +53,9 @@ class Network(object):
             gradient_w = [gw + dgw for gw, dgw in zip(gradient_w, delta_gradient_w)]
         self.weights = [w - (learning_rate / len(mini_batch)) * gw
                         for w, gw in zip(self.weights, gradient_w)]
-        self.biases = [b - (learning_rate / len(mini_batch)) * gb
-                       for b, gb in zip(self.biases, gradient_b)]
+        if self.useBias:
+            self.biases = [b - (learning_rate / len(mini_batch)) * gb
+                           for b, gb in zip(self.biases, gradient_b)]
 
     def backpropagation(self, x, y):
         """Calculate the gradient for the cost function."""
