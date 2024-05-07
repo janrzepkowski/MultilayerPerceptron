@@ -21,25 +21,23 @@ test_data = [(x.reshape(-1, 1), y.reshape(-1, 1)) for x, y in zip(X_test, y_test
 # Create a Network object with the appropriate architecture
 net = Network([4, 10, 3], useBias=False)  # 4 input neurons, 10 hidden neurons, 3 output neurons
 
-# Train the network
-net.SGD(training_data, epochs=120, mini_batch_size=10, learning_rate=0.1, test_data=test_data)
+# Train the network with momentum
+net.SGD(training_data, epochs=15, mini_batch_size=10, learning_rate=0.1, momentum=0.9, test_data=test_data)
 
 # Evaluate the network
 correct_results = net.evaluate(test_data)
 total_samples = len(test_data)
 accuracy = correct_results / total_samples
 
-print(f"Accuracy: {accuracy * 100}%")
+print(f"Accuracy with momentum: {accuracy * 100}%")
 
-
-net2 = Network([4, 10, 3], useBias=True)  # 4 input neurons, 10 hidden neurons, 3 output neurons
-
-# Train the network
-net2.SGD(training_data, epochs=120, mini_batch_size=10, learning_rate=0.1, test_data=test_data)
+# Train the network without momentum
+net2 = Network([4, 10, 3], useBias=False)
+net2.SGD(training_data, epochs=15, mini_batch_size=10, learning_rate=0.1, momentum=0, test_data=test_data)
 
 # Evaluate the network
 correct_results2 = net2.evaluate(test_data)
 total_samples2 = len(test_data)
 accuracy2 = correct_results2 / total_samples2
 
-print(f"Accuracy: {accuracy2 * 100}%")
+print(f"Accuracy without momentum: {accuracy2 * 100}%")
