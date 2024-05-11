@@ -22,7 +22,7 @@ class Network(object):
             a = sigmoid(np.dot(weight, a) + bias)
         return a
 
-    def SGD(self, training_data, epochs, mini_batch_size, learning_rate, momentum=0, test_data=None):
+    def SGD(self, training_data, epochs, mini_batch_size, learning_rate, desired_precision, momentum=0, test_data=None):
         training_data = list(training_data)
         num_training_data = len(training_data)
 
@@ -38,7 +38,14 @@ class Network(object):
             for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch, learning_rate, momentum)
             if test_data:
-                print(f"Epoch {epoch} : {self.evaluate(test_data)} / {num_test_data}")
+                test_results = [(np.argmax(self.feedforward(x)), np.argmax(y))
+                                for (x, y) in test_data]
+                num_correct = sum(int(x == y) for (x, y) in test_results)
+                precision = num_correct / num_test_data
+                print(f"Epoch {epoch} : {num_correct} / {num_test_data} Precision: {precision}")
+                if precision >= desired_precision:
+                    print("Desired precision reached, stopping training.")
+                    return
             else:
                 print(f"Epoch {epoch} complete")
 
