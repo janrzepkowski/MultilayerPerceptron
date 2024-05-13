@@ -22,8 +22,10 @@ test_data = [(x.reshape(-1, 1), y.reshape(-1, 1)) for x, y in zip(X_test, y_test
 net = Network([4, 5, 3], useBias=False)  # 4 input neurons, 10 hidden neurons, 3 output neurons
 
 # Train the network with momentum
-net.SGD(training_data, epochs=20, mini_batch_size=10, learning_rate=0.1, desired_precision=1.0, momentum=0.9, test_data=test_data)
+net.SGD(training_data, epochs=20, mini_batch_size=10, learning_rate=0.1, precision=11.0, momentum=0.9,
+        test_data=test_data)
 
 # Train the network without momentum
 net2 = Network([4, 5, 3], useBias=False)
-net2.SGD(training_data, epochs=100, mini_batch_size=10, learning_rate=0.1, desired_precision=0.87, momentum=0, test_data=test_data)
+net2.SGD(training_data, epochs=100, mini_batch_size=10, learning_rate=0.1, precision=0.87, momentum=0,
+         test_data=test_data)

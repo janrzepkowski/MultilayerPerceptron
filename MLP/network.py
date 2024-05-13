@@ -22,7 +22,7 @@ class Network(object):
             a = sigmoid(np.dot(weight, a) + bias)
         return a
 
-    def SGD(self, training_data, epochs, mini_batch_size, learning_rate, desired_precision, momentum=0, test_data=None):
+    def SGD(self, training_data, epochs, mini_batch_size, learning_rate, precision, momentum=0, test_data=None):
         training_data = list(training_data)
         num_training_data = len(training_data)
 
@@ -41,9 +41,9 @@ class Network(object):
                 test_results = [(np.argmax(self.feedforward(x)), np.argmax(y))
                                 for (x, y) in test_data]
                 num_correct = sum(int(x == y) for (x, y) in test_results)
-                precision = num_correct / num_test_data
-                print(f"Epoch {epoch} : {num_correct} / {num_test_data} Precision: {precision}")
-                if precision >= desired_precision:
+                p = num_correct / num_test_data
+                print(f"Epoch {epoch} : {num_correct} / {num_test_data} Precision: {p}")
+                if p >= precision:
                     print("Desired precision reached, stopping training.")
                     return
             else:
@@ -74,7 +74,7 @@ class Network(object):
             zs.append(z)
             activation = sigmoid(z)
             activations.append(activation)
-        delta = self.cost_derivative(activations[-1], y) * sigmoid_derivative(zs[-1])
+        delta = (activations[-1] - y) * sigmoid_derivative(zs[-1])  # changed
         gradient_b[-1] = delta
         gradient_w[-1] = np.dot(delta, activations[-2].transpose())
         for layer in range(2, self.num_layers):
@@ -83,7 +83,7 @@ class Network(object):
             delta = np.dot(self.weights[-layer + 1].transpose(), delta) * sp
             gradient_b[-layer] = delta
             gradient_w[-layer] = np.dot(delta, activations[-layer - 1].transpose())
-        return (gradient_b, gradient_w)
+        return gradient_b, gradient_w
 
     def evaluate(self, test_data):
         test_results = [(np.argmax(self.feedforward(x)), np.argmax(y))
@@ -92,7 +92,7 @@ class Network(object):
 
     @staticmethod
     def cost_derivative(output_activations, y):
-        return output_activations - y
+        return 0.5 * ((output_activations - y) ** 2)
 
     def save(self, filename):
         with open(filename, "wb") as f:
