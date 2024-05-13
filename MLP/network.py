@@ -74,7 +74,7 @@ class Network(object):
             zs.append(z)
             activation = sigmoid(z)
             activations.append(activation)
-        delta = (activations[-1] - y) * sigmoid_derivative(zs[-1])  # changed
+        delta = self.cost_derivative(activations[-1], y) * sigmoid_derivative(zs[-1])
         gradient_b[-1] = delta
         gradient_w[-1] = np.dot(delta, activations[-2].transpose())
         for layer in range(2, self.num_layers):
@@ -92,7 +92,7 @@ class Network(object):
 
     @staticmethod
     def cost_derivative(output_activations, y):
-        return 0.5 * ((output_activations - y) ** 2)
+        return output_activations - y
 
     def save(self, filename):
         with open(filename, "wb") as f:
