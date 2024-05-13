@@ -22,7 +22,9 @@ class Network(object):
             a = sigmoid(np.dot(weight, a) + bias)
         return a
 
-    def SGD(self, training_data, epochs, mini_batch_size, learning_rate, precision, momentum=0, test_data=None):
+    def SGD(self, training_data, epochs, precision, mini_batch_size, learning_rate, momentum, test_data, shuffle):
+        with open('trainError.txt', 'w') as file:
+            pass
         training_data = list(training_data)
         num_training_data = len(training_data)
 
@@ -31,7 +33,8 @@ class Network(object):
             num_test_data = len(test_data)
 
         for epoch in range(epochs):
-            random.shuffle(training_data)
+            if shuffle:
+                random.shuffle(training_data)
             mini_batches = [
                 training_data[k:k + mini_batch_size]
                 for k in range(0, num_training_data, mini_batch_size)]
