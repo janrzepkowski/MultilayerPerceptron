@@ -1,13 +1,16 @@
 from ucimlrepo import fetch_ucirepo
 import numpy as np
-from network import Network
+import pickle
 from sklearn.metrics import confusion_matrix
 
+import network
 
 print("1. Klasyfikacja irysow")
 print("2. Autoenkoder")
 print("3. Wyjscie")
 choice = int(input("Wybierz opcje: "))
+training_data = np.array([])
+test_data = np.array([])
 
 if choice == 1:
     iris = fetch_ucirepo(id=53)
@@ -35,6 +38,7 @@ if choice == 1:
 elif choice == 2:
     x_array = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     y_array = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+    target_values = y_array
     combined_data = np.concatenate((x_array, y_array), axis=1)
     training_data = combined_data
     test_data = combined_data
@@ -56,51 +60,76 @@ while True:
         print("4. Wyjscie")
         option = int(input("Wybierz opcje: "))
 
+    if option == 1 and not isNetworkCreated:
+        print("Tworzenie nowej sieci")
+        num_layers = int(input("Podaj liczbe warstw ukrytych: "))
+        num_neurons = []
+        for i in range(num_layers):
+            num_neurons.append(int(input("Podaj liczbe neuronow w " + str(i + 1) + " warstwie ukrytej: ")))
+
+        num_neurons.append(choice == 1 and 3 or 4)
+        isBias = int(input("Czy chcesz dodac bias?: "))
+        size = [len(x_array[0]), len(num_neurons), len(target_values[0])]
+
+        net = network.Network(size, useBias=(False if isBias == 0 else True))
+        print("Siec stworzona, co dalej?")
+        isNetworkCreated = True
+
     if option == 1 and isNetworkCreated:
         print("Podaj warunek stopu")
         print("1. Ilosc epok")
         print("2. Dokladnosc")
+        epoch_number = 999
+        stop_precision = 1
         stopCondition = int(input("Wybierz opcje: "))
         if stopCondition == 1:
-            stop = int(input("Podaj liczbe epok: "))
+            epoch_number = int(input("Podaj liczbe epok: "))
         elif stopCondition == 2:
-            stop = float(input("Podaj dokladnosc: "))
+            stop_precision = float(input("Podaj dokladnosc: "))
+        learning_rate = 1
+        momentum = 1
+        while not (0 <= learning_rate < 1 and 0 <= momentum < 1):
+            learning_rate = float(input("Podaj współczynnik nauki: "))
+            momentum = float(input("Podaj współczynnik momentum: "))
         shuffle = int(input("Czy przetasowac dane? "))
         errorEpoch = int(input("Co ile epok zapisywac blad? "))
         # TODO: METODA DO NAUKI SIECI W NETWORK.PY NETWORK.SGD
+        net.SGD(training_data, epochs=epoch_number, mini_batch_size=10, learning_rate=learning_rate, shuffle=shuffle,
+                precision=stop_precision, momentum=momentum, test_data=test_data, error_epoch=errorEpoch)
         print("Nauka zakonczona")
 
-    # if option == 2 and isNetworkCreated:
-    #     with open("trainStats.txt", "w") as file:
-    #         pass
-    #     correct = choice == 1 and [0, 0, 0] or [0, 0, 0, 0]
-    #     predicted_labels = []
-    #     true_labels = []
-    #     for index in range(choice == 1 and 105 or 4):
-    #         test = test_data[index]
-    #         output = network.forward(test[:4])
-    #         if choice == 1:
-    #             expected = test[-3:]
-    #         else:
-    #             expected = test[-4:]
-    #         true_label = np.argmax(expected)
-    #         predicted_label = np.argmax(output)
-    #         true_labels.append(true_label)
-    #         predicted_labels.append(predicted_label)
-    #         if predicted_label == true_label:
-    #             correct[true_label] += 1
-    #
-    #         error = network.calculateError(expected, output)
-    #         neuronWeights = []
-    #         neuronOutputs = []
-    #         for i in range(len(network.layers)):
-    #             layerWeights = []
-    #             layerOutputs = []
-    #             for j in range(len(network.layers[i].neurons)):
-    #                 layerWeights.append(network.layers[i].neurons[j].weights)
-    #                 layerOutputs.append(network.layers[i].neurons[j].output)
-    #             neuronWeights.append(layerWeights)
-    #             neuronOutputs.append(layerOutputs)
+    if option == 2 and isNetworkCreated:
+        with open("trainStats.txt", "w") as file:
+            pass
+        correct = choice == 1 and [0, 0, 0] or [0, 0, 0, 0]
+        predicted_labels = []
+        true_labels = []
+        for index in range(choice == 1 and 105 or 4):
+            test = test_data[index]
+            output = network.forward(test[:4])
+            if choice == 1:
+                expected = test[-3:]
+            else:
+                expected = test[-4:]
+            true_label = np.argmax(expected)
+            predicted_label = np.argmax(output)
+            true_labels.append(true_label)
+            predicted_labels.append(predicted_label)
+            if predicted_label == true_label:
+                correct[true_label] += 1
+            print(expected)
+
+            error = network.calculateError(expected, output)
+            neuronWeights = []
+            neuronOutputs = []
+            for i in range(len(network.layers)):
+                layerWeights = []
+                layerOutputs = []
+                for j in range(len(network.layers[i].neurons)):
+                    layerWeights.append(network.layers[i].neurons[j].weights)
+                    layerOutputs.append(network.layers[i].neurons[j].output)
+                neuronWeights.append(layerWeights)
+                neuronOutputs.append(layerOutputs)
 
             with open("trainStats.txt", "a") as file:
 
@@ -113,9 +142,9 @@ while True:
                     file.write(f"Wartosc na {i} wyjsciu: {output[i]}\n")
                 file.write(f"Wartosci wag neuronow wyjsciowych\n {neuronWeights[-1]}\n")
                 # TODO: ZAPISYWANIE WAG I WYJSCIA NEURONOW DO PLIKU
-                    file.write(f"Wartosci wyjsciowe neuronow ukrytych warstwy {i}: {neuronOutputs[i]}\n")
+                file.write(f"Wartosci wyjsciowe neuronow ukrytych warstwy {i}: {neuronOutputs[i]}\n")
                # TODO: ZAPISYWANIE WARTOSCI WYJSCIOWYCH NEURONOW DO PLIKU
-                    file.write(f"Wartosci wag neuronow ukrytych warstwy {i}:\n {neuronWeights[i]}\n")
+                file.write(f"Wartosci wag neuronow ukrytych warstwy {i}:\n {neuronWeights[i]}\n")
                 file.write("\n\n")
 
         file.close()
@@ -146,28 +175,16 @@ while True:
     if option == 3 and isNetworkCreated:
         print("Zapisanie sieci")
         # TODO: METODA DO ZAPISU SIECIsave(network)
+        filename = "network.pkl"
+        net.save(filename)
         print("Siec zapisana do pliku network.pkl")
 
-    if option == 1 and not isNetworkCreated:
-        print("Tworzenie nowej sieci")
-        num_layers = int(input("Podaj liczbe warstw ukrytych: "))
-        num_neurons = []
-        for i in range(num_layers):
-            num_neurons.append(int(input("Podaj liczbe neuronow w " + str(i + 1) + " warstwie ukrytej: ")))
 
-        num_neurons.append(choice == 1 and 3 or 4)
-        isBias = int(input("Czy chcesz dodac bias?: "))
-
-        learning_rate = float(input("Podaj współczynnik nauki: "))
-        momentum = float(input("Podaj współczynnik momentum: "))
-
-        # TODO: TWORZENIE SIECI network = Network(num_neurons, isBias)
-
-        print("Siec stworzona, co dalej?")
-        isNetworkCreated = True
     if option == 2 and not isNetworkCreated:
         print("Wczytanie sieci")
         #TODO: WCZYTYWANIE SIECI network = loadNetwork()
+        filename = "network.pkl"
+        net = net.load(filename)
         print("Siec wczytana, co dalej?")
         isNetworkCreated = True
     if option == 4:
