@@ -108,8 +108,9 @@ while True:
             momentum = float(input("Podaj współczynnik momentum: "))
         shuffle = int(input("Czy przetasowac dane? "))
         errorEpoch = int(input("Co ile epok zapisywac blad? "))
-        net.SGD(combined_train_data, epochs=epoch_number, mini_batch_size=10, learning_rate=learning_rate, shuffle=shuffle,
-                precision=stop_precision, momentum=momentum, test_data=validation_data, error_epoch=errorEpoch)
+        net.train(combined_train_data, epochs=epoch_number, precision=stop_precision, mini_batch_size=10,
+                  learning_rate=learning_rate, momentum=momentum, shuffle=shuffle, error_epoch=errorEpoch,
+                  validation_data=validation_data)
         print("Nauka zakonczona")
 
     if option == 2 and isNetworkCreated:
@@ -202,4 +203,4 @@ while True:
     if option == 4:
         break
 
-net.errorPlot()
+net.plot_training_error()

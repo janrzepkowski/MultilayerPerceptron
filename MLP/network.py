@@ -2,24 +2,24 @@ import random
 import numpy as np
 import pickle
 import time
-
 from matplotlib import pyplot as plt
+
 from functions import sigmoid, sigmoid_derivative
 
 
 class Network(object):
-    def __init__(self, sizes, useBias):
-        self.num_layers = len(sizes)
-        self.sizes = sizes
+    def __init__(self, layer_sizes, useBias):
+        self.num_layers = len(layer_sizes)
+        self.sizes = layer_sizes
         self.useBias = useBias
         if useBias:
-            self.biases = [np.random.uniform(-1, 1, (y, 1)) for y in sizes[1:]]
+            self.biases = [np.random.uniform(-1, 1, (y, 1)) for y in layer_sizes[1:]]
         else:
-            self.biases = [np.zeros((y, 1)) for y in sizes[1:]]
-        self.weights = [np.random.uniform(-1, 1, (y, x)) for x, y in zip(sizes[:-1], sizes[1:])]
+            self.biases = [np.zeros((y, 1)) for y in layer_sizes[1:]]
+        self.weights = [np.random.uniform(-1, 1, (y, x)) for x, y in zip(layer_sizes[:-1], layer_sizes[1:])]
         self.velocity = [np.zeros(w.shape) for w in self.weights]
 
-    def errorPlot(self):
+    def plot_training_error(self):
         with open('trainError.csv', 'r') as file:
             data = file.readlines()
         epochs = []
@@ -35,13 +35,13 @@ class Network(object):
         plt.grid(True)
         plt.show()
 
-    def feedforward(self, a):
+    def feedforward(self, input_data):
         for bias, weight in zip(self.biases, self.weights):
-            a = sigmoid(np.dot(weight, a) + bias)
-        return a
+            input_data = sigmoid(np.dot(weight, input_data) + bias)
+        return input_data
 
-    def SGD(self, training_data, epochs, precision, mini_batch_size, learning_rate, momentum, shuffle, error_epoch,
-            test_data=None):
+    def train(self, training_data, epochs, precision, mini_batch_size, learning_rate, momentum, shuffle, error_epoch,
+              validation_data=None):
         start_time = time.time()
         error_log = ""
         training_data = list(training_data)
@@ -49,9 +49,9 @@ class Network(object):
         prev_precision = 0
         current_precision = 0
 
-        if test_data is not None:
-            test_data = list(test_data)
-            num_test_data = len(test_data)
+        if validation_data is not None:
+            validation_data = list(validation_data)
+            num_test_data = len(validation_data)
 
         for epoch in range(epochs):
             if shuffle:
@@ -60,11 +60,11 @@ class Network(object):
                 training_data[k:k + mini_batch_size]
                 for k in range(0, num_training_data, mini_batch_size)]
             for mini_batch in mini_batches:
-                self.update_mini_batch(mini_batch, learning_rate, momentum)
+                self.update(mini_batch, learning_rate, momentum)
             if epoch % error_epoch == 0:
-                if test_data:
+                if validation_data:
                     test_results = [(np.argmax(self.feedforward(x)), np.argmax(y))
-                                    for (x, y) in test_data]
+                                    for (x, y) in validation_data]
                     num_correct = sum(int(x == y) for (x, y) in test_results)
                     current_precision = num_correct / num_test_data
                     print(f"Epoch {epoch} : {num_correct} / {num_test_data} Precision: {current_precision}")
@@ -81,7 +81,7 @@ class Network(object):
         with open('trainError.csv', 'w') as file:
             file.write(error_log)
 
-    def update_mini_batch(self, mini_batch, learning_rate, momentum):
+    def update(self, mini_batch, learning_rate, momentum):
         gradient_b = [np.zeros(b.shape) for b in self.biases]
         gradient_w = [np.zeros(w.shape) for w in self.weights]
         for x, y in mini_batch:
@@ -100,33 +100,29 @@ class Network(object):
         gradient_w = [np.zeros(w.shape) for w in self.weights]
         activation = x
         activations = [x]
-        zs = []
+        weighted_layer = []
         for b, w in zip(self.biases, self.weights):
-            z = np.dot(w, activation) + b
-            zs.append(z)
-            activation = sigmoid(z)
+            weighted_neuron = np.dot(w, activation) + b
+            weighted_layer.append(weighted_neuron)
+            activation = sigmoid(weighted_neuron)
             activations.append(activation)
-        delta = self.cost_derivative(activations[-1], y) * sigmoid_derivative(zs[-1])
+        delta = self.cost_derivative(activations[-1], y) * sigmoid_derivative(weighted_layer[-1])
         gradient_b[-1] = delta
         gradient_w[-1] = np.dot(delta, activations[-2].transpose())
         for layer in range(2, self.num_layers):
-            z = zs[-layer]
-            sp = sigmoid_derivative(z)
-            delta = np.dot(self.weights[-layer + 1].transpose(), delta) * sp
+            weighted_neuron = weighted_layer[-layer]
+            sigmoid_prime = sigmoid_derivative(weighted_neuron)
+            delta = np.dot(self.weights[-layer + 1].transpose(), delta) * sigmoid_prime
             gradient_b[-layer] = delta
             gradient_w[-layer] = np.dot(delta, activations[-layer - 1].transpose())
         return gradient_b, gradient_w
 
-    def evaluate(self, test_data):
-        test_results = [(np.argmax(self.feedforward(x)), np.argmax(y))
-                        for (x, y) in test_data]
-        return sum(int(x == y) for (x, y) in test_results)
-
     def epoch_error(self, train_data):
         error = 0
         for x, y in train_data:
-            error += self.calculate_error( self.feedforward(x), y)
+            error += self.calculate_error(self.feedforward(x), y)
         return error / len(train_data)
+
     @staticmethod
     def cost_derivative(output_activations, y):
         return output_activations - y
