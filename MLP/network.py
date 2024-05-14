@@ -109,3 +109,7 @@ class Network(object):
     def load(filename):
         with open(filename, "rb") as f:
             return pickle.load(f)
+
+    @staticmethod
+    def calculate_error(expected, output):
+        return np.mean(np.power(expected - output, 2))

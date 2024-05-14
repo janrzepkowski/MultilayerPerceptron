@@ -1,6 +1,5 @@
 from ucimlrepo import fetch_ucirepo
 import numpy as np
-import pickle
 from sklearn.metrics import confusion_matrix
 
 import network
@@ -31,9 +30,23 @@ if choice == 1:
 
     target_values = np.array(target_values)
 
-    combined_data = np.concatenate((x_array, target_values), axis=1)
-    training_data = np.concatenate((combined_data[0:15], combined_data[50:65], combined_data[100:115]), axis=0)
-    test_data = np.concatenate((combined_data[15:50], combined_data[65:100], combined_data[115:150]), axis=0)
+    # combined_data = np.concatenate((x_array, target_values), axis=1)
+    combined_data = [(x.reshape(-1, 1), y.reshape(-1, 1)) for x, y in zip(x_array, target_values)]
+    # combined_data = np.column_stack((x_array, target_values))
+    training_data = []
+    for a in range(15):
+        training_data.append(combined_data[a])
+        training_data.append(combined_data[50 + a])
+        training_data.append(combined_data[100 + a])
+    # print(training_data)
+    # training_data = np.concatenate((combined_data[0:15], combined_data[50:65], combined_data[100:115]), axis=1)
+    # test_data = np.concatenate((combined_data[15:50], combined_data[65:100], combined_data[115:150]), axis=1)
+    testing_data = []
+    for a in range(35):
+        testing_data.append(combined_data[15 + a])
+        testing_data.append(combined_data[65 + a])
+        testing_data.append(combined_data[115 + a])
+    test_data = testing_data
 
 elif choice == 2:
     x_array = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
@@ -106,11 +119,11 @@ while True:
         true_labels = []
         for index in range(choice == 1 and 105 or 4):
             test = test_data[index]
-            output = network.forward(test[:4])
+            output = net.feedforward(test[:4][0])
             if choice == 1:
-                expected = test[-3:]
+                expected = test[-3:][1]
             else:
-                expected = test[-4:]
+                expected = test[-4:][1]
             true_label = np.argmax(expected)
             predicted_label = np.argmax(output)
             true_labels.append(true_label)
@@ -119,17 +132,17 @@ while True:
                 correct[true_label] += 1
             print(expected)
 
-            error = network.calculateError(expected, output)
+            error = net.calculate_error(expected, output)
             neuronWeights = []
             neuronOutputs = []
-            for i in range(len(network.layers)):
-                layerWeights = []
-                layerOutputs = []
-                for j in range(len(network.layers[i].neurons)):
-                    layerWeights.append(network.layers[i].neurons[j].weights)
-                    layerOutputs.append(network.layers[i].neurons[j].output)
-                neuronWeights.append(layerWeights)
-                neuronOutputs.append(layerOutputs)
+            # for i in range(len(net.layers)):
+            #     layerWeights = []
+            #     layerOutputs = []
+            #     for j in range(len(net.layers[i].neurons)):
+            #         layerWeights.append(net.layers[i].neurons[j].weights)
+            #         layerOutputs.append(net.layers[i].neurons[j].output)
+            #     neuronWeights.append(layerWeights)
+            #     neuronOutputs.append(layerOutputs)
 
             with open("trainStats.txt", "a") as file:
 
@@ -140,12 +153,12 @@ while True:
                     file.write(f"Blad popelniony na {i} wyjsciu: {output[i] - expected[i]}\n")
                 for i in range(len(output)):
                     file.write(f"Wartosc na {i} wyjsciu: {output[i]}\n")
-                file.write(f"Wartosci wag neuronow wyjsciowych\n {neuronWeights[-1]}\n")
-                # TODO: ZAPISYWANIE WAG I WYJSCIA NEURONOW DO PLIKU
-                file.write(f"Wartosci wyjsciowe neuronow ukrytych warstwy {i}: {neuronOutputs[i]}\n")
-               # TODO: ZAPISYWANIE WARTOSCI WYJSCIOWYCH NEURONOW DO PLIKU
-                file.write(f"Wartosci wag neuronow ukrytych warstwy {i}:\n {neuronWeights[i]}\n")
-                file.write("\n\n")
+                # file.write(f"Wartosci wag neuronow wyjsciowych\n {neuronWeights[-1]}\n")
+               #  # TODO: ZAPISYWANIE WAG I WYJSCIA NEURONOW DO PLIKU
+               #  file.write(f"Wartosci wyjsciowe neuronow ukrytych warstwy {i}: {neuronOutputs[i]}\n")
+               # # TODO: ZAPISYWANIE WARTOSCI WYJSCIOWYCH NEURONOW DO PLIKU
+               #  file.write(f"Wartosci wag neuronow ukrytych warstwy {i}:\n {neuronWeights[i]}\n")
+               #  file.write("\n\n")
 
         file.close()
 
@@ -164,8 +177,8 @@ while True:
         matrix = confusion_matrix(true_labels, predicted_labels)
         print("\nMacierz pomyłek:")
         print(matrix)
-        precision = np.diag(matrix) / np.sum(matrix, axis=0)
-        recall = np.diag(matrix) / np.sum(matrix, axis=1)
+        precision = np.sum(np.sum(np.diag(matrix) / len(test_data)))
+        recall = np.sum(np.sum(np.diag(matrix) / len(test_data)))
         f_measure = 2 * (precision * recall) / (precision + recall)
 
         print("\nPrecyzja (Precision):", precision)
@@ -184,7 +197,7 @@ while True:
         print("Wczytanie sieci")
         #TODO: WCZYTYWANIE SIECI network = loadNetwork()
         filename = "network.pkl"
-        net = net.load(filename)
+        net = network.Network.load(filename)
         print("Siec wczytana, co dalej?")
         isNetworkCreated = True
     if option == 4:
