@@ -41,18 +41,14 @@ if choice == 1:
             target_values.append([0, 0, 1])
 
     target_values = np.array(target_values)
-
-    # combined_data = np.concatenate((x_array, target_values), axis=1)
     combined_data = [(x.reshape(-1, 1), y.reshape(-1, 1)) for x, y in zip(x_array, target_values)]
-    # combined_data = np.column_stack((x_array, target_values))
+
     training_data = []
     for a in range(15):
         training_data.append(combined_data[a])
         training_data.append(combined_data[50 + a])
         training_data.append(combined_data[100 + a])
-    # print(training_data)
-    # training_data = np.concatenate((combined_data[0:15], combined_data[50:65], combined_data[100:115]), axis=1)
-    # test_data = np.concatenate((combined_data[15:50], combined_data[65:100], combined_data[115:150]), axis=1)
+
     testing_data = []
     for a in range(35):
         testing_data.append(combined_data[15 + a])
@@ -65,7 +61,7 @@ elif choice == 2:
     y_array = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     target_values = y_array
     combined_data = [(x.reshape(-1, 1), y.reshape(-1, 1)) for x, y in zip(x_array, target_values)]
-    # combined_data = np.concatenate((x_array, y_array), axis=1)
+
     training_data = combined_data
     test_data = combined_data
 elif choice == 3:
@@ -94,10 +90,10 @@ while True:
             num_neurons.append(int(input("Podaj liczbe neuronow w " + str(i + 1) + " warstwie ukrytej: ")))
 
         num_neurons.append(choice == 1 and 3 or 4)
-        isBias = int(input("Czy chcesz dodac bias?: "))
+        bias = int(input("Czy chcesz dodac bias?: "))
         size = [len(x_array[0]), len(num_neurons), len(target_values[0])]
 
-        net = network.Network(size, useBias=(False if isBias == 0 else True))
+        net = network.Network(size, useBias=(False if bias == 0 else True))
         print("Siec stworzona, co dalej?")
         isNetworkCreated = True
 
@@ -119,7 +115,6 @@ while True:
             momentum = float(input("Podaj współczynnik momentum: "))
         shuffle = int(input("Czy przetasowac dane? "))
         errorEpoch = int(input("Co ile epok zapisywac blad? "))
-        # TODO: METODA DO NAUKI SIECI W NETWORK.PY NETWORK.SGD
         net.SGD(training_data, epochs=epoch_number, mini_batch_size=10, learning_rate=learning_rate, shuffle=shuffle,
                 precision=stop_precision, momentum=momentum, test_data=test_data, error_epoch=errorEpoch)
         print("Nauka zakonczona")
@@ -148,14 +143,6 @@ while True:
             error = net.calculate_error(expected, output)
             neuronWeights = []
             neuronOutputs = []
-            # for i in range(len(net.layers)):
-            #     layerWeights = []
-            #     layerOutputs = []
-            #     for j in range(len(net.layers[i].neurons)):
-            #         layerWeights.append(net.layers[i].neurons[j].weights)
-            #         layerOutputs.append(net.layers[i].neurons[j].output)
-            #     neuronWeights.append(layerWeights)
-            #     neuronOutputs.append(layerOutputs)
 
             with open("trainStats.txt", "a") as file:
 
@@ -166,12 +153,7 @@ while True:
                     file.write(f"Blad popelniony na {i} wyjsciu: {output[i] - expected[i]}\n")
                 for i in range(len(output)):
                     file.write(f"Wartosc na {i} wyjsciu: {output[i]}\n")
-                # file.write(f"Wartosci wag neuronow wyjsciowych\n {neuronWeights[-1]}\n")
-               #  # TODO: ZAPISYWANIE WAG I WYJSCIA NEURONOW DO PLIKU
-               #  file.write(f"Wartosci wyjsciowe neuronow ukrytych warstwy {i}: {neuronOutputs[i]}\n")
-               # # TODO: ZAPISYWANIE WARTOSCI WYJSCIOWYCH NEURONOW DO PLIKU
-               #  file.write(f"Wartosci wag neuronow ukrytych warstwy {i}:\n {neuronWeights[i]}\n")
-               #  file.write("\n\n")
+                file.write("\n\n")
 
         file.close()
 
@@ -201,7 +183,6 @@ while True:
 
     if option == 3 and isNetworkCreated:
         print("Zapisanie sieci")
-        # TODO: METODA DO ZAPISU SIECIsave(network)
         filename = "network.pkl"
         net.save(filename)
         print("Siec zapisana do pliku network.pkl")
@@ -209,12 +190,9 @@ while True:
 
     if option == 2 and not isNetworkCreated:
         print("Wczytanie sieci")
-        #TODO: WCZYTYWANIE SIECI network = loadNetwork()
         filename = "network.pkl"
         net = network.Network.load(filename)
         print("Siec wczytana, co dalej?")
         isNetworkCreated = True
     if option == 4:
         break
-
-#TODO: network.errorPlot()

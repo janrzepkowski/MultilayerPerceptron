@@ -1,4 +1,6 @@
 import random
+import time
+
 import numpy as np
 import pickle
 
@@ -24,6 +26,7 @@ class Network(object):
 
     def SGD(self, training_data, epochs, precision, mini_batch_size, learning_rate, momentum, shuffle, error_epoch,
             test_data=None):
+        start_time = time.time()
         with open('trainError.txt', 'w') as file:
             pass
         training_data = list(training_data)
@@ -59,6 +62,8 @@ class Network(object):
                 print("Worse precision reached, stopping training.")
                 print(epoch)
                 return
+            end_time = time.time()
+            print(f"Time elapsed: {end_time - start_time}")
             prev_precision = current_precision
 
     def update_mini_batch(self, mini_batch, learning_rate, momentum):
