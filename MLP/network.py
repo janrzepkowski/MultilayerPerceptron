@@ -1,8 +1,7 @@
 import random
-import time
-
 import numpy as np
 import pickle
+import time
 
 from functions import sigmoid, sigmoid_derivative
 
@@ -58,18 +57,12 @@ class Network(object):
                         return
                 else:
                     print(f"Epoch {epoch} complete")
-            if prev_precision >= precision:
-                print("Worse precision reached, stopping training.")
-                print(epoch)
-                return
-            end_time = time.time()
-            print(f"Time elapsed: {end_time - start_time}")
-            prev_precision = current_precision
+                end_time = time.time()
+                print(f"Time elapsed: {end_time - start_time}")
 
     def update_mini_batch(self, mini_batch, learning_rate, momentum):
         gradient_b = [np.zeros(b.shape) for b in self.biases]
         gradient_w = [np.zeros(w.shape) for w in self.weights]
-        print(mini_batch)
         for x, y in mini_batch:
             delta_gradient_b, delta_gradient_w = self.backpropagation(x, y)
             gradient_b = [gb + dgb for gb, dgb in zip(gradient_b, delta_gradient_b)]
