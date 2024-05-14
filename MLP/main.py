@@ -1,8 +1,20 @@
 from ucimlrepo import fetch_ucirepo
 import numpy as np
 from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
 
 import network
+
+def draw(precision, recall, f_measure):
+    fig, ax = plt.subplots()
+    names = ["precision", "recall", "f_measure"]
+    counts = [precision, recall, f_measure]
+    bar_labels = ['red', 'blue', 'orange']
+    bar_colors = ['tab:red', 'tab:blue', 'tab:orange']
+    ax.bar(names, counts, label=bar_labels, color=bar_colors)
+    ax.set_ylabel('Percentage')
+    ax.set_title('Results')
+    plt.show()
 
 print("1. Klasyfikacja irysow")
 print("2. Autoenkoder")
@@ -52,7 +64,8 @@ elif choice == 2:
     x_array = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     y_array = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     target_values = y_array
-    combined_data = np.concatenate((x_array, y_array), axis=1)
+    combined_data = [(x.reshape(-1, 1), y.reshape(-1, 1)) for x, y in zip(x_array, target_values)]
+    # combined_data = np.concatenate((x_array, y_array), axis=1)
     training_data = combined_data
     test_data = combined_data
 elif choice == 3:
@@ -184,6 +197,7 @@ while True:
         print("\nPrecyzja (Precision):", precision)
         print("Czułość (Recall):", recall)
         print("Miara F (F-measure):", f_measure)
+        draw(precision, recall, f_measure)
 
     if option == 3 and isNetworkCreated:
         print("Zapisanie sieci")

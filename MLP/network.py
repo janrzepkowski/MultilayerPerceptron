@@ -28,7 +28,8 @@ class Network(object):
             pass
         training_data = list(training_data)
         num_training_data = len(training_data)
-        # prev_precision = 0
+        prev_precision = 0
+        current_precision = 0
 
         if test_data is not None:
             test_data = list(test_data)
@@ -47,13 +48,18 @@ class Network(object):
                     test_results = [(np.argmax(self.feedforward(x)), np.argmax(y))
                                     for (x, y) in test_data]
                     num_correct = sum(int(x == y) for (x, y) in test_results)
-                    p = num_correct / num_test_data
-                    print(f"Epoch {epoch} : {num_correct} / {num_test_data} Precision: {p}")
-                    if p >= precision:
+                    current_precision = num_correct / num_test_data
+                    print(f"Epoch {epoch} : {num_correct} / {num_test_data} Precision: {current_precision}")
+                    if current_precision >= precision:
                         print("Desired precision reached, stopping training.")
                         return
                 else:
                     print(f"Epoch {epoch} complete")
+            if prev_precision >= precision:
+                print("Worse precision reached, stopping training.")
+                print(epoch)
+                return
+            prev_precision = current_precision
 
     def update_mini_batch(self, mini_batch, learning_rate, momentum):
         gradient_b = [np.zeros(b.shape) for b in self.biases]
