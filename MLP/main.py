@@ -113,7 +113,7 @@ while True:
         print("Nauka zakonczona")
 
     if option == 2 and isNetworkCreated:
-        with open("trainStats.txt", "w") as file:
+        with open("trainStats.csv", "w") as file:
             pass
         correct = [0 for _ in range(len(combined_train_data[0][1]))]
         predicted_labels = []

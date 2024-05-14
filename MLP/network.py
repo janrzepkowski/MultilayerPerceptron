@@ -26,8 +26,7 @@ class Network(object):
     def SGD(self, training_data, epochs, precision, mini_batch_size, learning_rate, momentum, shuffle, error_epoch,
             test_data=None):
         start_time = time.time()
-        with open('trainError.txt', 'w') as file:
-            pass
+        error_log = ""
         training_data = list(training_data)
         num_training_data = len(training_data)
         prev_precision = 0
@@ -54,11 +53,16 @@ class Network(object):
                     print(f"Epoch {epoch} : {num_correct} / {num_test_data} Precision: {current_precision}")
                     if current_precision >= precision:
                         print("Desired precision reached, stopping training.")
+                        with open('trainError.csv', 'w') as file:
+                            file.write(error_log)
                         return
                 else:
                     print(f"Epoch {epoch} complete")
                 end_time = time.time()
                 print(f"Time elapsed: {end_time - start_time}")
+                error_log += f"{epoch}, {self.epoch_error(training_data)}\n"
+        with open('trainError.csv', 'w') as file:
+            file.write(error_log)
 
     def update_mini_batch(self, mini_batch, learning_rate, momentum):
         gradient_b = [np.zeros(b.shape) for b in self.biases]
@@ -101,6 +105,11 @@ class Network(object):
                         for (x, y) in test_data]
         return sum(int(x == y) for (x, y) in test_results)
 
+    def epoch_error(self, train_data):
+        error = 0
+        for x, y in train_data:
+            error += self.calculate_error( self.feedforward(x), y)
+        return error / len(train_data)
     @staticmethod
     def cost_derivative(output_activations, y):
         return output_activations - y
@@ -114,6 +123,5 @@ class Network(object):
         with open(filename, "rb") as f:
             return pickle.load(f)
 
-    @staticmethod
-    def calculate_error(expected, output):
+    def calculate_error(self, expected, output):
         return np.mean(np.power(expected - output, 2))
