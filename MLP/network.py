@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 import time
 
+from matplotlib import pyplot as plt
 from functions import sigmoid, sigmoid_derivative
 
 
@@ -17,6 +18,22 @@ class Network(object):
             self.biases = [np.zeros((y, 1)) for y in sizes[1:]]
         self.weights = [np.random.uniform(-1, 1, (y, x)) for x, y in zip(sizes[:-1], sizes[1:])]
         self.velocity = [np.zeros(w.shape) for w in self.weights]
+
+    def errorPlot(self):
+        with open('trainError.csv', 'r') as file:
+            data = file.readlines()
+        epochs = []
+        errors = []
+        for line in data:
+            epoch, error = map(float, line.strip().split(','))
+            epochs.append(epoch)
+            errors.append(error)
+        plt.plot(epochs, errors, marker='', linestyle='-')
+        plt.title('Błąd popełniony w kolejnych epokach nauki sieci')
+        plt.xlabel('Epoka')
+        plt.ylabel('Błąd')
+        plt.grid(True)
+        plt.show()
 
     def feedforward(self, a):
         for bias, weight in zip(self.biases, self.weights):

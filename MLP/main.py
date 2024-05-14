@@ -201,3 +201,5 @@ while True:
         isNetworkCreated = True
     if option == 4:
         break
+
+net.errorPlot()
