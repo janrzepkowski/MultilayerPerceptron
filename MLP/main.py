@@ -37,7 +37,7 @@ def prepare_data(array):
 
 def simulate(train, valid, test, neurons, c):
     # neurons.append(c == 1 and 3 or 4)
-    layers = [len(train[0][0]), len(neurons), len(train[0][1])]
+    layers = [4, len(neurons), 3]
     bias = False
     epochs = 1000
     error = 0.0001
@@ -108,15 +108,15 @@ while True:
         if option == 1 and not isNetworkCreated:
             print("Tworzenie nowej sieci")
             num_layers = int(input("Podaj liczbe warstw ukrytych: "))
-            num_neurons = []
+            num_neurons = [4]  # Dodajemy 4 na początek listy
             for i in range(num_layers):
                 num_neurons.append(int(input("Podaj liczbe neuronow w " + str(i + 1) + " warstwie ukrytej: ")))
 
-            num_neurons.append(choice == 1 and 3 or 4)
+            num_neurons.append(3)  # Dodajemy 3 na koniec listy
             bias = int(input("Czy chcesz dodac bias?: "))
-            size = [len(combined_train_data[0][0]), len(num_neurons), len(combined_train_data[0][1])]
 
-            net = network.Network(size, useBias=(False if bias == 0 else True))
+            net = network.Network(num_neurons, useBias=(
+                False if bias == 0 else True))  # Przekazujemy listę num_neurons jako rozmiar sieci
             print("Siec stworzona, co dalej?")
             isNetworkCreated = True
 
@@ -138,7 +138,7 @@ while True:
                 momentum = float(input("Podaj współczynnik momentum: "))
             shuffle = int(input("Czy przetasowac dane? "))
             errorEpoch = int(input("Co ile epok zapisywac blad? "))
-            net.train(combined_train_data, epochs=epoch_number, precision=stop_precision, mini_batch_size=10,
+            net.train(combined_train_data, epochs=epoch_number, stop_error=stop_precision, mini_batch_size=10,
                       learning_rate=learning_rate, momentum=momentum, shuffle=shuffle, error_epoch=errorEpoch,
                       validation_data=validation_data)
             print("Nauka zakonczona")

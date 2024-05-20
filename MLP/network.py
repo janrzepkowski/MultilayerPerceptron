@@ -18,6 +18,8 @@ class Network(object):
             self.biases = [np.zeros((y, 1)) for y in layer_sizes[1:]]
         self.weights = [np.random.uniform(-1, 1, (y, x)) for x, y in zip(layer_sizes[:-1], layer_sizes[1:])]
         self.velocity = [np.zeros(w.shape) for w in self.weights]
+        # print(self.weights)
+        # print(self.biases)
 
     def plot_training_error(self):
         with open('trainError.csv', 'r') as file:
