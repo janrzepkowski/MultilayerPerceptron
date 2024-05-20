@@ -43,7 +43,7 @@ class Network(object):
         return input_data
 
     def train(self, training_data, epochs, precision, mini_batch_size, learning_rate, momentum, shuffle, error_epoch,
-              validation_data=None):
+              validation_data=None, debug=False):
         start_time = time.time()
         error_log = ""
         training_data = list(training_data)
@@ -68,17 +68,20 @@ class Network(object):
                     num_correct = sum(int(x == y) for (x, y) in test_results)
                     current_precision = num_correct / num_test_data
                     epoch_error = self.epoch_error(validation_data)
-                    print(epoch_error)
-                    print(f"Epoch {epoch} : {num_correct} / {num_test_data} Precision: {current_precision}")
+                    if debug:
+                        print(epoch_error)
+                        print(f"Epoch {epoch} : {num_correct} / {num_test_data} Precision: {current_precision}")
                     if current_precision >= precision:
                         print("Desired precision reached, stopping training.")
                         with open('trainError.csv', 'w') as file:
                             file.write(error_log)
                         return
                 else:
-                    print(f"Epoch {epoch} complete")
+                    if debug:
+                        print(f"Epoch {epoch} complete")
                 end_time = time.time()
-                print(f"Time elapsed: {end_time - start_time}")
+                if debug:
+                    print(f"Time elapsed: {end_time - start_time}")
                 error_log += f"{epoch}, {self.epoch_error(training_data)}\n"
         with open('trainError.csv', 'w') as file:
             file.write(error_log)

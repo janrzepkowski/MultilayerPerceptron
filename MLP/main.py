@@ -187,7 +187,7 @@ while True:
             errorEpoch = int(input("Co ile epok zapisywac blad? "))
             net.train(combined_train_data, epochs=epoch_number, precision=stop_precision, mini_batch_size=10,
                       learning_rate=learning_rate, momentum=momentum, shuffle=shuffle, error_epoch=errorEpoch,
-                      validation_data=validation_data)
+                      validation_data=validation_data, debug=True)
             print("Nauka zakonczona")
 
         if option == 2 and isNetworkCreated:
