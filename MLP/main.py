@@ -36,30 +36,77 @@ def prepare_data(array):
 
 
 def simulate(train, valid, test, neurons, c):
-    # neurons.append(c == 1 and 3 or 4)
-    layers = [4, len(neurons), 3]
+    neurons.append(c == 1 and 3 or 4)
+    layers = [len(combined_train_data[0][0]), len(num_neurons), len(combined_train_data[0][1])]
+    # layers = [4, len(neurons), 4]
     bias = False
     epochs = 1000
-    error = 0.0001
+    error = 0.8
     sim_net = network.Network(layers, useBias=(False if bias == 0 else True))
     sim_net.train(train, epochs, error, 10,0.9, 0.0, 1, 10, valid)
     sim_net.plot_training_error()
+    confusion(sim_net, test)
 
     sim_net = network.Network(layers, useBias=(False if bias == 0 else True))
     sim_net.train(train, epochs, error, 10,0.6, 0.0, 1, 10, valid)
     sim_net.plot_training_error()
+    confusion(sim_net, test)
 
     sim_net = network.Network(layers, useBias=(False if bias == 0 else True))
     sim_net.train(train, epochs, error, 10,0.2, 0.0, 1, 10, valid)
     sim_net.plot_training_error()
+    confusion(sim_net, test)
 
     sim_net = network.Network(layers, useBias=(False if bias == 0 else True))
     sim_net.train(train, epochs, error, 10,0.9, 0.6, 1, 10, valid)
     sim_net.plot_training_error()
+    confusion(sim_net, test)
 
     sim_net = network.Network(layers, useBias=(False if bias == 0 else True))
     sim_net.train(train, epochs, error, 10,0.2, 0.9, 1, 10, valid)
     sim_net.plot_training_error()
+    confusion(sim_net, test)
+
+
+def confusion(network, test):
+    predicted_labels = []
+    true_labels = []
+    for index in range(len(test)):
+        test_row = test[index]
+        output = network.feedforward(test_row[0])
+        expected = test_row[1]
+        true_labels.append(np.argmax(expected))
+        predicted_labels.append(np.argmax(output))
+
+    matrix = confusion_matrix(true_labels, predicted_labels)
+    print("\nMacierz pomyłek:")
+    print(matrix)
+    recall = []
+    i = 0
+    for x in matrix:
+        tmp = 0
+        for a in x:
+            tmp += a
+        recall.append(x[i] / tmp)
+        i += 1
+    p = [np.array([matrix[x][y] for x in range(len(matrix))]) for y in range(len(matrix))]
+    p = np.array([np.sum(x) for x in p])
+    precision = []
+    for x, y in zip(np.diag(matrix), p):
+        if y == 0:
+            precision.append(0)
+        else:
+            precision.append(x / y)
+    f_measure = []
+    for x, y in zip(precision, recall):
+        if y == 0 or x == 0:
+            f_measure.append(0)
+        else:
+            f_measure.append(2 * x * y / (x + y))
+
+    print("\nPrecyzja (Precision):", precision)
+    print("Czułość (Recall):", recall)
+    print("Miara F (F-measure):", f_measure)
 
 
 while True:
@@ -138,7 +185,7 @@ while True:
                 momentum = float(input("Podaj współczynnik momentum: "))
             shuffle = int(input("Czy przetasowac dane? "))
             errorEpoch = int(input("Co ile epok zapisywac blad? "))
-            net.train(combined_train_data, epochs=epoch_number, stop_error=stop_precision, mini_batch_size=10,
+            net.train(combined_train_data, epochs=epoch_number, precision=stop_precision, mini_batch_size=10,
                       learning_rate=learning_rate, momentum=momentum, shuffle=shuffle, error_epoch=errorEpoch,
                       validation_data=validation_data)
             print("Nauka zakonczona")
@@ -233,7 +280,7 @@ while True:
             num_neurons = []
             for i in range(num_layers):
                 num_neurons.append(int(input("Podaj liczbe neuronow w " + str(i + 1) + " warstwie ukrytej: ")))
-            simulate(combined_train_data, combined_test_data, validation_data, num_neurons, choice)
+            simulate(combined_train_data, validation_data, combined_test_data, num_neurons, choice)
 
         if option == 5:
             break

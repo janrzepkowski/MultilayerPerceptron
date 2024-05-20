@@ -42,7 +42,7 @@ class Network(object):
             input_data = sigmoid(np.dot(weight, input_data) + bias)
         return input_data
 
-    def train(self, training_data, epochs, stop_error, mini_batch_size, learning_rate, momentum, shuffle, error_epoch,
+    def train(self, training_data, epochs, precision, mini_batch_size, learning_rate, momentum, shuffle, error_epoch,
               validation_data=None):
         start_time = time.time()
         error_log = ""
@@ -70,7 +70,7 @@ class Network(object):
                     epoch_error = self.epoch_error(validation_data)
                     print(epoch_error)
                     print(f"Epoch {epoch} : {num_correct} / {num_test_data} Precision: {current_precision}")
-                    if epoch_error <= stop_error:
+                    if current_precision >= precision:
                         print("Desired precision reached, stopping training.")
                         with open('trainError.csv', 'w') as file:
                             file.write(error_log)
