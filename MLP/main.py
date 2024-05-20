@@ -230,7 +230,7 @@ while True:
             if choice == 1:
                 print("Klasyfikacja irysow")
                 number = len(combined_test_data) / 3
-                accuracy = sum(correct) / number * 100
+                accuracy = sum(correct) / number * 100 / 3
                 print("Iris-setosa: " + str(correct[0] / number * 100) + "%")
                 print("Iris-versicolor: " + str(correct[1] / number * 100) + "%")
                 print("Iris-virginica: " + str(correct[2] / number * 100) + "%")
