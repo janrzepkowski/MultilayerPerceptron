@@ -68,12 +68,27 @@ def simulate(layers, train, valid, test):
 def confusion(network, test):
     predicted_labels = []
     true_labels = []
+    logs = "Wagi:\n" + str(network.weights)
+    logs += "\n\nWejscia obciazajece:\n" + str(network.biases)
+    general_error = 0.0
     for index in range(len(test)):
         test_row = test[index]
         output = network.feedforward(test_row[0])
         expected = test_row[1]
         true_labels.append(np.argmax(expected))
         predicted_labels.append(np.argmax(output))
+        error = network.calculate_error(expected, output)
+        general_error += error
+        logs += "Wzorzec wejsciowy:\n" + str(test_row[0]) + "\n"
+        logs += "Wzorzec wyjsciowy:\n" + str(expected) + "\n"
+        logs += "Uzyskane wyjscia:\n" + str(output) + "\n"
+        logs += "Wynik klasyfikacji: " + str(np.argmax(output) + 1) + "\n"
+        logs += "Blad wyjsciowy: " + str(error) + "\n\n"
+
+    logs += "Calkowity blad wyjsciowy: " + str(general_error) + "\n"
+
+    with open("stats.txt", 'a') as file:
+        file.write(logs)
 
     matrix = confusion_matrix(true_labels, predicted_labels)
     print("\nMacierz pomyłek:")
@@ -107,6 +122,7 @@ def confusion(network, test):
 
 
 while True:
+    open("stats.txt", 'w').close()
     print("1. Klasyfikacja irysow")
     print("2. Autoenkoder")
     print("3. Wyjscie")
