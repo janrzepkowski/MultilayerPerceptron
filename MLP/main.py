@@ -35,13 +35,10 @@ def prepare_data(array):
     return combined_data
 
 
-def simulate(train, valid, test, neurons, c):
-    neurons.append(c == 1 and 3 or 4)
-    layers = [len(combined_train_data[0][0]), len(num_neurons), len(combined_train_data[0][1])]
-    # layers = [4, len(neurons), 4]
+def simulate(layers, train, valid, test):
     bias = False
     epochs = 1000
-    error = 0.8
+    error = 1.0
     sim_net = network.Network(layers, useBias=(False if bias == 0 else True))
     sim_net.train(train, epochs, error, 10,0.9, 0.0, 1, 10, valid)
     sim_net.plot_training_error()
@@ -155,15 +152,14 @@ while True:
         if option == 1 and not isNetworkCreated:
             print("Tworzenie nowej sieci")
             num_layers = int(input("Podaj liczbe warstw ukrytych: "))
-            num_neurons = [4]  # Dodajemy 4 na początek listy
+            num_neurons = [4]
             for i in range(num_layers):
                 num_neurons.append(int(input("Podaj liczbe neuronow w " + str(i + 1) + " warstwie ukrytej: ")))
 
-            num_neurons.append(3)  # Dodajemy 3 na koniec listy
+            num_neurons.append(3)
             bias = int(input("Czy chcesz dodac bias?: "))
 
-            net = network.Network(num_neurons, useBias=(
-                False if bias == 0 else True))  # Przekazujemy listę num_neurons jako rozmiar sieci
+            net = network.Network(num_neurons, useBias=(False if bias == 0 else True))
             print("Siec stworzona, co dalej?")
             isNetworkCreated = True
 
@@ -191,6 +187,7 @@ while True:
             print("Nauka zakonczona")
 
         if option == 2 and isNetworkCreated:
+            net.plot_training_error()
             with open("trainStats.csv", "w") as file:
                 pass
             correct = [0 for _ in range(len(combined_train_data[0][1]))]
@@ -277,12 +274,12 @@ while True:
             isNetworkCreated = True
         if option == 4:
             num_layers = int(input("Podaj liczbe warstw ukrytych: "))
-            num_neurons = []
+            num_neurons = [len(combined_train_data[0][0])]
             for i in range(num_layers):
                 num_neurons.append(int(input("Podaj liczbe neuronow w " + str(i + 1) + " warstwie ukrytej: ")))
-            simulate(combined_train_data, validation_data, combined_test_data, num_neurons, choice)
+
+            num_neurons.append(len(combined_train_data[0][1]))
+            simulate(num_neurons, combined_train_data, validation_data, combined_test_data)
 
         if option == 5:
             break
-
-    net.plot_training_error()
