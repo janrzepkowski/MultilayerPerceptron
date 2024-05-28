@@ -168,11 +168,11 @@ while True:
         if option == 1 and not isNetworkCreated:
             print("Tworzenie nowej sieci")
             num_layers = int(input("Podaj liczbe warstw ukrytych: "))
-            num_neurons = [4]
+            num_neurons = [len(combined_train_data[0][0])]
             for i in range(num_layers):
                 num_neurons.append(int(input("Podaj liczbe neuronow w " + str(i + 1) + " warstwie ukrytej: ")))
 
-            num_neurons.append(3)
+            num_neurons.append(len(combined_train_data[0][1]))
             bias = int(input("Czy chcesz dodac bias?: "))
 
             net = network.Network(num_neurons, useBias=(False if bias == 0 else True))
@@ -184,7 +184,7 @@ while True:
             print("1. Ilosc epok")
             print("2. Dokladnosc")
             epoch_number = 999
-            stop_precision = 1
+            stop_precision = 1.1
             stopCondition = int(input("Wybierz opcje: "))
             if stopCondition == 1:
                 epoch_number = int(input("Podaj liczbe epok: "))
@@ -204,77 +204,78 @@ while True:
 
         if option == 2 and isNetworkCreated:
             net.plot_training_error()
-            with open("trainStats.csv", "w") as file:
-                pass
-            correct = [0 for _ in range(len(combined_train_data[0][1]))]
-            predicted_labels = []
-            true_labels = []
-            for index in range(len(combined_test_data)):
-                test = combined_test_data[index]
-                output = net.feedforward(test[0])
-                if choice == 1:
-                    expected = test[1]
-                else:
-                    expected = test[1]
-                true_label = np.argmax(expected)
-                predicted_label = np.argmax(output)
-                true_labels.append(true_label)
-                predicted_labels.append(predicted_label)
-                if predicted_label == true_label:
-                    correct[true_label] += 1
-
-                error = net.calculate_error(expected, output)
-            #     neuronWeights = []
-            #     neuronOutputs = []
+            confusion(net, combined_test_data)
+            # with open("trainStats.csv", "w") as file:
+            #     pass
+            # correct = [0 for _ in range(len(combined_train_data[0][1]))]
+            # predicted_labels = []
+            # true_labels = []
+            # for index in range(len(combined_test_data)):
+            #     test = combined_test_data[index]
+            #     output = net.feedforward(test[0])
+            #     if choice == 1:
+            #         expected = test[1]
+            #     else:
+            #         expected = test[1]
+            #     true_label = np.argmax(expected)
+            #     predicted_label = np.argmax(output)
+            #     true_labels.append(true_label)
+            #     predicted_labels.append(predicted_label)
+            #     if predicted_label == true_label:
+            #         correct[true_label] += 1
             #
-            #     with open("trainStats.txt", "a") as file:
+            #     error = net.calculate_error(expected, output)
+            # #     neuronWeights = []
+            # #     neuronOutputs = []
+            # #
+            # #     with open("trainStats.txt", "a") as file:
+            # #
+            # #         file.write(f"Wzorzec numer: {index}, {test[:4]}\n")
+            # #         file.write(f"Popelniony blad dla wzorca: {error}\n")
+            # #         file.write(f"Pozadany wzorzec odpowiedzi: {expected}\n")
+            # #         for i in range(len(output)):
+            # #             file.write(f"Blad popelniony na {i} wyjsciu: {output[i] - expected[i]}\n")
+            # #         for i in range(len(output)):
+            # #             file.write(f"Wartosc na {i} wyjsciu: {output[i]}\n")
+            # #         file.write("\n\n")
+            # #
+            # # file.close()
             #
-            #         file.write(f"Wzorzec numer: {index}, {test[:4]}\n")
-            #         file.write(f"Popelniony blad dla wzorca: {error}\n")
-            #         file.write(f"Pozadany wzorzec odpowiedzi: {expected}\n")
-            #         for i in range(len(output)):
-            #             file.write(f"Blad popelniony na {i} wyjsciu: {output[i] - expected[i]}\n")
-            #         for i in range(len(output)):
-            #             file.write(f"Wartosc na {i} wyjsciu: {output[i]}\n")
-            #         file.write("\n\n")
+            # if choice == 1:
+            #     print("Klasyfikacja irysow")
+            #     number = len(combined_test_data) / 3
+            #     accuracy = sum(correct) / number * 100 / 3
+            #     print("Iris-setosa: " + str(correct[0] / number * 100) + "%")
+            #     print("Iris-versicolor: " + str(correct[1] / number * 100) + "%")
+            #     print("Iris-virginica: " + str(correct[2] / number * 100) + "%")
+            #     print("Total: " + str(accuracy) + "%")
+            # else:
+            #     print("Autoenkoder")
+            #     print("Popelniony blad: ", error)
+            #     print("Odpowiedzi: ", output)
+            #     print("Poprawne odpowiedzi: ", expected)
+            # matrix = confusion_matrix(true_labels, predicted_labels)
+            # print("\nMacierz pomyłek:")
+            # print(matrix)
+            # precision = []
+            # i = 0
+            # for x in matrix:
+            #     tmp = 0
+            #     for a in x:
+            #         tmp += a
+            #     precision.append(x[i]/tmp)
+            #     i += 1
+            # recall = [np.array([matrix[x][y] for x in range(len(matrix))]) for y in range(len(matrix))]
+            # # recall = np.diag(matrix) / (len(test_data)/len(test_data[0][1]))
+            # recall = np.array([np.sum(x) for x in recall])
+            # recall = np.diag(matrix) / recall
+            # precision = np.array(precision)
+            # f_measure = 2 * (precision * recall) / (precision + recall)
             #
-            # file.close()
-
-            if choice == 1:
-                print("Klasyfikacja irysow")
-                number = len(combined_test_data) / 3
-                accuracy = sum(correct) / number * 100 / 3
-                print("Iris-setosa: " + str(correct[0] / number * 100) + "%")
-                print("Iris-versicolor: " + str(correct[1] / number * 100) + "%")
-                print("Iris-virginica: " + str(correct[2] / number * 100) + "%")
-                print("Total: " + str(accuracy) + "%")
-            else:
-                print("Autoenkoder")
-                print("Popelniony blad: ", error)
-                print("Odpowiedzi: ", output)
-                print("Poprawne odpowiedzi: ", expected)
-            matrix = confusion_matrix(true_labels, predicted_labels)
-            print("\nMacierz pomyłek:")
-            print(matrix)
-            precision = []
-            i = 0
-            for x in matrix:
-                tmp = 0
-                for a in x:
-                    tmp += a
-                precision.append(x[i]/tmp)
-                i += 1
-            recall = [np.array([matrix[x][y] for x in range(len(matrix))]) for y in range(len(matrix))]
-            # recall = np.diag(matrix) / (len(test_data)/len(test_data[0][1]))
-            recall = np.array([np.sum(x) for x in recall])
-            recall = np.diag(matrix) / recall
-            precision = np.array(precision)
-            f_measure = 2 * (precision * recall) / (precision + recall)
-
-            print("\nPrecyzja (Precision):", precision)
-            print("Czułość (Recall):", recall)
-            print("Miara F (F-measure):", f_measure)
-            # draw(precision, recall, f_measure)
+            # print("\nPrecyzja (Precision):", precision)
+            # print("Czułość (Recall):", recall)
+            # print("Miara F (F-measure):", f_measure)
+            # # draw(precision, recall, f_measure)
 
         if option == 3 and isNetworkCreated:
             print("Zapisanie sieci")
